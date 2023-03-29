@@ -9,6 +9,7 @@ container.appendChild(renderer.domElement);
 const textureLoader = new THREE.TextureLoader();
 const numCards = 12;
 const cardBackUrl = 'https://i.imgur.com/W3PV9D9.jpeg';
+const alphaMapUrl = 'https://i.imgur.com/Rv2mVFM.png'
 const cardUrls = [
     'https://i.imgur.com/Dt9B96r.jpg','https://i.imgur.com/KcZhE7q.jpg','https://i.imgur.com/ASDi2X0.jpg',
     'https://i.imgur.com/3bwFJKd.jpg','https://i.imgur.com/1115n3i.jpg','https://i.imgur.com/kMwIAbE.jpg',
@@ -79,23 +80,35 @@ window.addEventListener("resize", () => {
 });
 
 // Load card textures and create materials for each card
-const loadCardMaterials = (cardUrls, cardBackUrl, onLoad) => {
+const loadCardMaterials = (cardUrls, cardBackUrl, alphaMapUrl, onLoad) => {
   let loadedCards = 0;
   const cardMaterials = [];
 
+  // Load card back texture
   textureLoader.load(cardBackUrl, (backTexture) => {
     const backMaterial = new THREE.MeshBasicMaterial({ map: backTexture });
 
-    cardUrls.slice(0, numCards).forEach((url, index) => {
-      textureLoader.load(url, (frontTexture) => {
-        const frontMaterial = new THREE.MeshBasicMaterial({ map: frontTexture });
-        const materialPair = { front: frontMaterial, back: backMaterial };
-        cardMaterials[index] = materialPair;
-        loadedCards++;
+    // Load alpha map
+    textureLoader.load(alphaMapUrl, (alphaMapTexture) => {
+      // Loop through each card URL and create a material pair
+      cardUrls.slice(0, numCards).forEach((url, index) => {
+        // Load card front texture
+        textureLoader.load(url, (frontTexture) => {
+          // Create material pair with front, back, and alpha map textures
+          const frontMaterial = new THREE.MeshBasicMaterial({
+            map: frontTexture,
+            alphaMap: alphaMapTexture,
+            transparent: true,
+          });
+          const materialPair = { front: frontMaterial, back: backMaterial };
+          cardMaterials[index] = materialPair;
+          loadedCards++;
 
-        if (loadedCards === numCards) {
-          onLoad(cardMaterials);
-        }
+          // Call onLoad when all cards have loaded
+          if (loadedCards === numCards) {
+            onLoad(cardMaterials);
+          }
+        });
       });
     });
   });
@@ -211,4 +224,4 @@ window.addEventListener("resize", () => {
 });
 
 // Load card materials and create cards in the scene
-loadCardMaterials(cardUrls, cardBackUrl, createCards);
+loadCardMaterials(cardUrls, cardBackUrl,alphaMapUrl, createCards);
