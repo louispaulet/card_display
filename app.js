@@ -78,6 +78,15 @@ window.addEventListener("resize", () => {
   renderer.setSize(width, height);
 });
 
+const cropTexture = (texture, margin) => {
+  const aspectRatio = texture.image.width / texture.image.height;
+  const cropMargin = margin / Math.min(texture.image.width, texture.image.height);
+  texture.repeat.set(1 - 2 * cropMargin, 1 - 2 * cropMargin);
+  texture.offset.set(cropMargin, cropMargin);
+  texture.needsUpdate = true;
+  return texture;
+};
+
 // Load card textures and create materials for each card
 const loadCardMaterials = (cardUrls, cardBackUrl, onLoad) => {
   let loadedCards = 0;
@@ -88,7 +97,8 @@ const loadCardMaterials = (cardUrls, cardBackUrl, onLoad) => {
 
     cardUrls.slice(0, numCards).forEach((url, index) => {
       textureLoader.load(url, (frontTexture) => {
-        const frontMaterial = new THREE.MeshBasicMaterial({ map: frontTexture });
+        const croppedTexture = cropTexture(frontTexture, 45);
+        const frontMaterial = new THREE.MeshBasicMaterial({ map: croppedTexture });
         const materialPair = { front: frontMaterial, back: backMaterial };
         cardMaterials[index] = materialPair;
         loadedCards++;
@@ -101,7 +111,7 @@ const loadCardMaterials = (cardUrls, cardBackUrl, onLoad) => {
   });
 };
 
-// Update the texture of the card that's currently in focus
+
 const updateCardInFocusTexture = (cardGroup) => {
   if (currentCardIndex >= cardUrls.length) {
     currentCardIndex = 0
@@ -110,12 +120,14 @@ const updateCardInFocusTexture = (cardGroup) => {
 
   const url = cardUrls[currentCardIndex];
   textureLoader.load(url, (newFrontTexture) => {
+    const croppedTexture = cropTexture(newFrontTexture, 45);
     cardGroup.children[0].material.map.dispose();
-    cardGroup.children[0].material.map = newFrontTexture;
+    cardGroup.children[0].material.map = croppedTexture;
     cardGroup.children[0].material.needsUpdate = true;
     currentCardIndex++;
   });
 };
+
 
 // Create and add card objects to the scene
 const createCards = (cardMaterials) => {
@@ -150,6 +162,9 @@ function animate() {
 
   // Rotate the scene
   angular_increment = 0.0025
+  
+  //angular_increment = 0.01 //debug speed
+  
   scene.rotation.y += angular_increment;
   rotationCounter += angular_increment;
 
