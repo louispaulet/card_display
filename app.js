@@ -244,40 +244,45 @@ const createCards = (cardMaterials) => {
 
 camera.position.z = 6.7;
 
+let lastUpdatedCard = null;
+let rotationCounter = 0;
+
 // Animate the scene
 function animate() {
   requestAnimationFrame(animate);
 
   // Rotate the scene
   scene.rotation.y += 0.0025;
+  rotationCounter += 0.0025;
 
-  // Calculate angle between camera and card in focus
-  const angle = Math.atan2(camera.position.x, camera.position.z) - Math.PI;
-  let minDistance = 5;
-  let minDistanceCard = null;
+  let cardInFocus = null;
+  let minDistance = Infinity;
 
   // Find the card in focus
   scene.traverse((object) => {
     if (object.type === "Group") {
-      const objectAngle = object.rotation.y % (2 * Math.PI);
-      const angleDiff = Math.abs(objectAngle - angle);
-      if (angleDiff > Math.PI) {
-        if (2 * Math.PI - angleDiff < minDistance) {
-          minDistance = 2 * Math.PI - angleDiff;
-          minDistanceCard = object;
-        }
-      } else {
-        if (angleDiff < minDistance) {
-          minDistance = angleDiff;
-          minDistanceCard = object;
-        }
+      // Calculate the rotated card position
+      const cardPosition = object.position.clone();
+      cardPosition.applyAxisAngle(new THREE.Vector3(0, 1, 0), scene.rotation.y);
+
+      const distance = camera.position.distanceTo(cardPosition);
+      if (distance < minDistance) {
+        minDistance = distance;
+        cardInFocus = object;
       }
     }
   });
 
+  // Check if a full rotation has occurred and the card in focus has changed
+  if (rotationCounter >= 2 * Math.PI) {
+    rotationCounter = 0;
+    //lastUpdatedCard = null;
+  }
+
   // Update card in focus texture
-  if (minDistanceCard) {
-    updateCardInFocusTexture(minDistanceCard);
+  if (cardInFocus && cardInFocus !== lastUpdatedCard) {
+    updateCardInFocusTexture(cardInFocus);
+    lastUpdatedCard = cardInFocus;
   }
 
   // Render the scene with the camera
