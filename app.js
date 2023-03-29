@@ -208,6 +208,7 @@ const loadCardMaterials = (cardUrls, cardBackUrl, onLoad) => {
 // Update the texture of the card that's currently in focus
 const updateCardInFocusTexture = (cardGroup) => {
   if (currentCardIndex >= cardUrls.length) {
+    currentCardIndex = 0
     return;
   }
 
@@ -252,13 +253,14 @@ function animate() {
   requestAnimationFrame(animate);
 
   // Rotate the scene
-  scene.rotation.y += 0.0025;
-  rotationCounter += 0.0025;
+  angular_increment = 0.0025
+  scene.rotation.y += angular_increment;
+  rotationCounter += angular_increment;
 
   let cardInFocus = null;
-  let minDistance = Infinity;
+  let maxDistance = -Infinity;
 
-  // Find the card in focus
+  // Find the card farthest from the camera
   scene.traverse((object) => {
     if (object.type === "Group") {
       // Calculate the rotated card position
@@ -266,8 +268,8 @@ function animate() {
       cardPosition.applyAxisAngle(new THREE.Vector3(0, 1, 0), scene.rotation.y);
 
       const distance = camera.position.distanceTo(cardPosition);
-      if (distance < minDistance) {
-        minDistance = distance;
+      if (distance > maxDistance) {
+        maxDistance = distance;
         cardInFocus = object;
       }
     }
@@ -276,7 +278,7 @@ function animate() {
   // Check if a full rotation has occurred and the card in focus has changed
   if (rotationCounter >= 2 * Math.PI) {
     rotationCounter = 0;
-    //lastUpdatedCard = null;
+    lastUpdatedCard = null;
   }
 
   // Update card in focus texture
@@ -288,6 +290,7 @@ function animate() {
   // Render the scene with the camera
   renderer.render(scene, camera);
 }
+
 
 // Start animation
 animate();
