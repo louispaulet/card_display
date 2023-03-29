@@ -78,15 +78,6 @@ window.addEventListener("resize", () => {
   renderer.setSize(width, height);
 });
 
-const cropTexture = (texture, margin) => {
-  const aspectRatio = texture.image.width / texture.image.height;
-  const cropMargin = margin / Math.min(texture.image.width, texture.image.height);
-  texture.repeat.set(1 - 2 * cropMargin, 1 - 2 * cropMargin);
-  texture.offset.set(cropMargin, cropMargin);
-  texture.needsUpdate = true;
-  return texture;
-};
-
 // Load card textures and create materials for each card
 const loadCardMaterials = (cardUrls, cardBackUrl, onLoad) => {
   let loadedCards = 0;
@@ -97,8 +88,7 @@ const loadCardMaterials = (cardUrls, cardBackUrl, onLoad) => {
 
     cardUrls.slice(0, numCards).forEach((url, index) => {
       textureLoader.load(url, (frontTexture) => {
-        const croppedTexture = cropTexture(frontTexture, 45);
-        const frontMaterial = new THREE.MeshBasicMaterial({ map: croppedTexture });
+        const frontMaterial = new THREE.MeshBasicMaterial({ map: frontTexture });
         const materialPair = { front: frontMaterial, back: backMaterial };
         cardMaterials[index] = materialPair;
         loadedCards++;
@@ -112,6 +102,7 @@ const loadCardMaterials = (cardUrls, cardBackUrl, onLoad) => {
 };
 
 
+
 const updateCardInFocusTexture = (cardGroup) => {
   if (currentCardIndex >= cardUrls.length) {
     currentCardIndex = 0
@@ -120,9 +111,8 @@ const updateCardInFocusTexture = (cardGroup) => {
 
   const url = cardUrls[currentCardIndex];
   textureLoader.load(url, (newFrontTexture) => {
-    const croppedTexture = cropTexture(newFrontTexture, 45);
     cardGroup.children[0].material.map.dispose();
-    cardGroup.children[0].material.map = croppedTexture;
+    cardGroup.children[0].material.map = newFrontTexture;
     cardGroup.children[0].material.needsUpdate = true;
     currentCardIndex++;
   });
@@ -133,7 +123,7 @@ const updateCardInFocusTexture = (cardGroup) => {
 const createCards = (cardMaterials) => {
   cardMaterials.forEach((materialPair, i) => {
     const frontCard = new THREE.Mesh(cardGeometry, materialPair.front);
-        const backCard = new THREE.Mesh(cardGeometry, materialPair.back);
+    const backCard = new THREE.Mesh(cardGeometry, materialPair.back);
     backCard.rotation.y = Math.PI;
 
     const cardGroup = new THREE.Group();
@@ -150,6 +140,7 @@ const createCards = (cardMaterials) => {
     scene.add(cardGroup);
   });
 };
+
 
 camera.position.z = 6.7;
 
