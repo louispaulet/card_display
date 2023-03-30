@@ -8,7 +8,9 @@ container.appendChild(renderer.domElement);
 
 const textureLoader = new THREE.TextureLoader();
 const numCards = 12;
-const cardBackUrl = 'https://i.imgur.com/W3PV9D9.jpeg';
+//const cardBackUrl = 'https://i.imgur.com/W3PV9D9.jpeg';
+const cardBackUrl = 'https://i.imgur.com/YGjiTEG.jpeg';
+const alphaMapUrl = 'https://i.imgur.com/Rv2mVFM.png'
 const cardUrls = [
     'https://i.imgur.com/Dt9B96r.jpg','https://i.imgur.com/KcZhE7q.jpg','https://i.imgur.com/ASDi2X0.jpg',
     'https://i.imgur.com/3bwFJKd.jpg','https://i.imgur.com/1115n3i.jpg','https://i.imgur.com/kMwIAbE.jpg',
@@ -78,38 +80,41 @@ window.addEventListener("resize", () => {
   renderer.setSize(width, height);
 });
 
-const cropTexture = (texture, margin) => {
-  const aspectRatio = texture.image.width / texture.image.height;
-  const cropMargin = margin / Math.min(texture.image.width, texture.image.height);
-  texture.repeat.set(1 - 2 * cropMargin, 1 - 2 * cropMargin);
-  texture.offset.set(cropMargin, cropMargin);
-  texture.needsUpdate = true;
-  return texture;
-};
-
 // Load card textures and create materials for each card
-const loadCardMaterials = (cardUrls, cardBackUrl, onLoad) => {
+const loadCardMaterials = (cardUrls, cardBackUrl, alphaMapUrl, onLoad) => {
   let loadedCards = 0;
   const cardMaterials = [];
 
+  // Load card back texture
   textureLoader.load(cardBackUrl, (backTexture) => {
     const backMaterial = new THREE.MeshBasicMaterial({ map: backTexture });
 
-    cardUrls.slice(0, numCards).forEach((url, index) => {
-      textureLoader.load(url, (frontTexture) => {
-        const croppedTexture = cropTexture(frontTexture, 45);
-        const frontMaterial = new THREE.MeshBasicMaterial({ map: croppedTexture });
-        const materialPair = { front: frontMaterial, back: backMaterial };
-        cardMaterials[index] = materialPair;
-        loadedCards++;
+    // Load alpha map
+    textureLoader.load(alphaMapUrl, (alphaMapTexture) => {
+      // Loop through each card URL and create a material pair
+      cardUrls.slice(0, numCards).forEach((url, index) => {
+        // Load card front texture
+        textureLoader.load(url, (frontTexture) => {
+          // Create material pair with front, back, and alpha map textures
+          const frontMaterial = new THREE.MeshBasicMaterial({
+            map: frontTexture,
+            alphaMap: alphaMapTexture,
+            transparent: true,
+          });
+          const materialPair = { front: frontMaterial, back: backMaterial };
+          cardMaterials[index] = materialPair;
+          loadedCards++;
 
-        if (loadedCards === numCards) {
-          onLoad(cardMaterials);
-        }
+          // Call onLoad when all cards have loaded
+          if (loadedCards === numCards) {
+            onLoad(cardMaterials);
+          }
+        });
       });
     });
   });
 };
+
 
 
 const updateCardInFocusTexture = (cardGroup) => {
@@ -120,9 +125,8 @@ const updateCardInFocusTexture = (cardGroup) => {
 
   const url = cardUrls[currentCardIndex];
   textureLoader.load(url, (newFrontTexture) => {
-    const croppedTexture = cropTexture(newFrontTexture, 45);
     cardGroup.children[0].material.map.dispose();
-    cardGroup.children[0].material.map = croppedTexture;
+    cardGroup.children[0].material.map = newFrontTexture;
     cardGroup.children[0].material.needsUpdate = true;
     currentCardIndex++;
   });
@@ -133,7 +137,7 @@ const updateCardInFocusTexture = (cardGroup) => {
 const createCards = (cardMaterials) => {
   cardMaterials.forEach((materialPair, i) => {
     const frontCard = new THREE.Mesh(cardGeometry, materialPair.front);
-        const backCard = new THREE.Mesh(cardGeometry, materialPair.back);
+    const backCard = new THREE.Mesh(cardGeometry, materialPair.back);
     backCard.rotation.y = Math.PI;
 
     const cardGroup = new THREE.Group();
@@ -151,6 +155,7 @@ const createCards = (cardMaterials) => {
   });
 };
 
+
 camera.position.z = 6.7;
 
 let lastUpdatedCard = null;
@@ -161,7 +166,7 @@ function animate() {
   requestAnimationFrame(animate);
 
   // Rotate the scene
-  angular_increment = 0.0025
+  angular_increment = 0.0015
   
   //angular_increment = 0.01 //debug speed
   
@@ -220,4 +225,4 @@ window.addEventListener("resize", () => {
 });
 
 // Load card materials and create cards in the scene
-loadCardMaterials(cardUrls, cardBackUrl, createCards);
+loadCardMaterials(cardUrls, cardBackUrl,alphaMapUrl, createCards);
