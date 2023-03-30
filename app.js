@@ -97,14 +97,22 @@ window.addEventListener("resize", () => {
 });
 
 function createSkybox(imageUrls) {
-  const loader = new THREE.CubeTextureLoader();
+  const skyboxSize = 1000; // You can adjust this value to make the skybox bigger or smaller
+  const skyboxGeometry = new THREE.BoxGeometry(skyboxSize, skyboxSize, skyboxSize);
 
-  // Load the skybox texture
-  const skyboxTexture = loader.load(imageUrls);
+  const loader = new THREE.TextureLoader();
+  const materials = imageUrls.map(
+    (url) =>
+      new THREE.MeshBasicMaterial({
+        map: loader.load(url),
+        side: THREE.BackSide, // Render the texture on the inside of the cube
+      })
+  );
 
-  // Apply the skybox texture to the scene background
-  scene.background = skyboxTexture;
+  const skybox = new THREE.Mesh(skyboxGeometry, materials);
+  scene.add(skybox);
 }
+
 
 
 // Load card textures and create materials for each card
