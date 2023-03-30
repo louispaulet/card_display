@@ -1,4 +1,5 @@
 // Global variables
+let angular_increment = 0.0015;
 const container = document.getElementById("container");
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -156,6 +157,16 @@ const createCards = (cardMaterials) => {
 };
 
 
+const speedSlider = document.getElementById('speedSlider');
+speedSlider.addEventListener('input', handleSpeedChange);
+
+function handleSpeedChange() {
+    const newSpeed = parseFloat(speedSlider.value);
+    angular_increment = 0.0015 + newSpeed;
+}
+
+
+
 camera.position.z = 6.7;
 
 let lastUpdatedCard = null;
@@ -166,7 +177,7 @@ function animate() {
   requestAnimationFrame(animate);
 
   // Rotate the scene
-  angular_increment = 0.0015
+  //angular_increment = 0.0015
   
   //angular_increment = 0.01 //debug speed
   
