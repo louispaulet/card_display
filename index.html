@@ -7,11 +7,45 @@
     <style>
         body { margin: 0; }
         canvas { display: block; }
+        .wrapper {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+        }
+        .slider-label {
+            position: absolute;
+            top: 5%;
+            left: 5%;
+            transform: translateX(-50%);
+            z-index: 1;
+            color: white; 
+        }
+        #speedSlider {
+            position: absolute;
+            top: 7%; 
+            left: 5%;
+            transform: translateX(-50%);
+            z-index: 1;
+        }
+        #container {
+            width: 100%;
+            height: 100%;
+        }
     </style>
+
+
 </head>
 <body>
-    <div id="container"></div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="app.js"></script>
+    <div class="wrapper">
+        <div class="slider-label">
+            <label for="speedSlider"> vitesse de défilement </label>
+            <span id="sliderValue"></span>
+        </div>
+        <input type="range" id="speedSlider" min="-0.00075" max="0.00075" step="0.00001" value="0">
+        <div id="container"></div>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+        <script src="app.js"></script>
+    </div>
 </body>
 </html>
+
