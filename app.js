@@ -7,11 +7,26 @@ const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 container.appendChild(renderer.domElement);
 
+const pivot = new THREE.Object3D();
+scene.add(pivot);
+
 const textureLoader = new THREE.TextureLoader();
 const numCards = 12;
-//const cardBackUrl = 'https://i.imgur.com/W3PV9D9.jpeg';
 const cardBackUrl = 'https://i.imgur.com/YGjiTEG.jpeg';
 const alphaMapUrl = 'https://i.imgur.com/Rv2mVFM.png'
+
+const common_url = 'https://i.imgur.com/rvYOBte.png'
+
+const skyboxImageUrls = [
+  common_url, // Right
+  common_url, // Left
+  common_url, // Top
+  common_url, // Bottom
+  common_url, // Front
+  common_url, // Back
+];
+
+
 const cardUrls = [
     'https://i.imgur.com/Dt9B96r.jpg','https://i.imgur.com/KcZhE7q.jpg','https://i.imgur.com/ASDi2X0.jpg',
     'https://i.imgur.com/3bwFJKd.jpg','https://i.imgur.com/1115n3i.jpg','https://i.imgur.com/kMwIAbE.jpg',
@@ -80,6 +95,17 @@ window.addEventListener("resize", () => {
 
   renderer.setSize(width, height);
 });
+
+function createSkybox(imageUrls) {
+  const loader = new THREE.CubeTextureLoader();
+
+  // Load the skybox texture
+  const skyboxTexture = loader.load(imageUrls);
+
+  // Apply the skybox texture to the scene background
+  scene.background = skyboxTexture;
+}
+
 
 // Load card textures and create materials for each card
 const loadCardMaterials = (cardUrls, cardBackUrl, alphaMapUrl, onLoad) => {
@@ -152,7 +178,7 @@ const createCards = (cardMaterials) => {
     cardGroup.position.z = radius * Math.cos(angle);
     cardGroup.rotation.y = angle;
 
-    scene.add(cardGroup);
+    pivot.add(cardGroup); // Add cardGroup to pivot instead of scene
   });
 };
 
@@ -166,7 +192,6 @@ function handleSpeedChange() {
 }
 
 
-
 camera.position.z = 6.7;
 
 let lastUpdatedCard = null;
@@ -175,13 +200,9 @@ let rotationCounter = 0;
 // Animate the scene
 function animate() {
   requestAnimationFrame(animate);
-
-  // Rotate the scene
-  //angular_increment = 0.0015
   
-  //angular_increment = 0.01 //debug speed
-  
-  scene.rotation.y += angular_increment;
+  // Rotate the pivot object
+  pivot.rotation.y += angular_increment;
   rotationCounter += angular_increment;
 
   let cardInFocus = null;
@@ -237,3 +258,4 @@ window.addEventListener("resize", () => {
 
 // Load card materials and create cards in the scene
 loadCardMaterials(cardUrls, cardBackUrl,alphaMapUrl, createCards);
+createSkybox(skyboxImageUrls);
