@@ -16,10 +16,11 @@ const cardBackUrl = 'https://i.imgur.com/YGjiTEG.jpeg';
 const alphaMapUrl = 'https://i.imgur.com/Rv2mVFM.png'
 
 const common_url = 'https://i.imgur.com/rvYOBte.png'
+const flipped_url = 'https://i.imgur.com/C9Rllq3.png'
 
 const skyboxImageUrls = [
-  common_url, // Right
-  common_url, // Left
+  flipped_url, // Right
+  flipped_url, // Left
   common_url, // Top
   common_url, // Bottom
   common_url, // Front
