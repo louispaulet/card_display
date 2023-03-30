@@ -8,7 +8,8 @@ container.appendChild(renderer.domElement);
 
 const textureLoader = new THREE.TextureLoader();
 const numCards = 12;
-const cardBackUrl = 'https://i.imgur.com/W3PV9D9.jpeg';
+//const cardBackUrl = 'https://i.imgur.com/W3PV9D9.jpeg';
+const cardBackUrl = 'https://i.imgur.com/YGjiTEG.jpeg';
 const alphaMapUrl = 'https://i.imgur.com/Rv2mVFM.png'
 const cardUrls = [
     'https://i.imgur.com/Dt9B96r.jpg','https://i.imgur.com/KcZhE7q.jpg','https://i.imgur.com/ASDi2X0.jpg',
@@ -165,7 +166,7 @@ function animate() {
   requestAnimationFrame(animate);
 
   // Rotate the scene
-  angular_increment = 0.0025
+  angular_increment = 0.0015
   
   //angular_increment = 0.01 //debug speed
   
