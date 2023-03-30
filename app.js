@@ -7,11 +7,27 @@ const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 container.appendChild(renderer.domElement);
 
+const pivot = new THREE.Object3D();
+scene.add(pivot);
+
 const textureLoader = new THREE.TextureLoader();
 const numCards = 12;
-//const cardBackUrl = 'https://i.imgur.com/W3PV9D9.jpeg';
 const cardBackUrl = 'https://i.imgur.com/YGjiTEG.jpeg';
 const alphaMapUrl = 'https://i.imgur.com/Rv2mVFM.png'
+
+const common_url = 'https://i.imgur.com/rvYOBte.png'
+const flipped_url = 'https://i.imgur.com/C9Rllq3.png'
+
+const skyboxImageUrls = [
+  flipped_url, // Right
+  flipped_url, // Left
+  common_url, // Top
+  common_url, // Bottom
+  common_url, // Front
+  common_url, // Back
+];
+
+
 const cardUrls = [
     'https://i.imgur.com/Dt9B96r.jpg','https://i.imgur.com/KcZhE7q.jpg','https://i.imgur.com/ASDi2X0.jpg',
     'https://i.imgur.com/3bwFJKd.jpg','https://i.imgur.com/1115n3i.jpg','https://i.imgur.com/kMwIAbE.jpg',
@@ -80,6 +96,25 @@ window.addEventListener("resize", () => {
 
   renderer.setSize(width, height);
 });
+
+function createSkybox(imageUrls) {
+  const skyboxSize = 1000; // You can adjust this value to make the skybox bigger or smaller
+  const skyboxGeometry = new THREE.BoxGeometry(skyboxSize, skyboxSize, skyboxSize);
+
+  const loader = new THREE.TextureLoader();
+  const materials = imageUrls.map(
+    (url) =>
+      new THREE.MeshBasicMaterial({
+        map: loader.load(url),
+        side: THREE.BackSide, // Render the texture on the inside of the cube
+      })
+  );
+
+  const skybox = new THREE.Mesh(skyboxGeometry, materials);
+  scene.add(skybox);
+}
+
+
 
 // Load card textures and create materials for each card
 const loadCardMaterials = (cardUrls, cardBackUrl, alphaMapUrl, onLoad) => {
@@ -152,7 +187,7 @@ const createCards = (cardMaterials) => {
     cardGroup.position.z = radius * Math.cos(angle);
     cardGroup.rotation.y = angle;
 
-    scene.add(cardGroup);
+    pivot.add(cardGroup); // Add cardGroup to pivot instead of scene
   });
 };
 
@@ -166,7 +201,6 @@ function handleSpeedChange() {
 }
 
 
-
 camera.position.z = 6.7;
 
 let lastUpdatedCard = null;
@@ -175,13 +209,9 @@ let rotationCounter = 0;
 // Animate the scene
 function animate() {
   requestAnimationFrame(animate);
-
-  // Rotate the scene
-  //angular_increment = 0.0015
   
-  //angular_increment = 0.01 //debug speed
-  
-  scene.rotation.y += angular_increment;
+  // Rotate the pivot object
+  pivot.rotation.y += angular_increment;
   rotationCounter += angular_increment;
 
   let cardInFocus = null;
@@ -237,3 +267,4 @@ window.addEventListener("resize", () => {
 
 // Load card materials and create cards in the scene
 loadCardMaterials(cardUrls, cardBackUrl,alphaMapUrl, createCards);
+createSkybox(skyboxImageUrls);
